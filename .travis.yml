@@ -1,0 +1,21 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t saimon46/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run saimon46/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t saimon46/multi-client ./client
+  - docker build -t saimon46/multi-nginx ./nginx
+  - docker build -t saimon46/multi-server ./server
+  - docker build -t saimon46/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-sdtin
+  - docker push saimon46/multi-client
+  - docker push saimon46/multi-nginx
+  - docker push saimon46/multi-server
+  - docker push saimon46/multi-worker
